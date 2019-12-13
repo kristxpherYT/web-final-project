@@ -1,0 +1,111 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <section id="projects-section" class="col-md-12">
+        <div class="pr-5 w-100 d-flex justify-content-end">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">Add a
+                Project
+            </button>
+        </div>
+        <div id="projects-list">
+            {% if projects %}
+                {% for project in projects %}
+                    <div class="card-div col-md-4">
+                        <div class="card-view">
+                            <a href="{% url 'remove_project' %}?project_id={{ project.id }}" class="delete-card">X</a>
+                            <input type="text" class="sr-only" value="{{ project.id }}">
+                            <img src="media/{{ project.image_path }}" class="image" alt="{{ project }}">
+                            <div class="card-title">{{ project.name }}</div>
+                            <div class="card-text">
+                                <ul>
+                                    {% if project.characteristics %}
+                                        {% for characteristic in project.characteristics %}
+                                            <li>{{ characteristic.text }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Form Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Add a Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="projectForm" action="{% url 'store_project' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="projectName">Project Name</label>
+                            <input type="text" class="form-control" id="projectName" name="name"
+                                   placeholder="Enter the project name">
+                        </div>
+                        <div class="form-group">
+                            <label for="projectCharacteristic">Characteristics</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="projectCharacteristic"
+                                       placeholder="Enter a characteristic">
+                                <div class="input-group-append">
+                                    <button type="button" id="addCharacteristic" class="input-group-text btn btn-success">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="file-field">
+                                <div class="btn btn-primary btn-sm float-left">
+                                  <span>Choose file</span>
+                                  <input type="file" name="image_path">
+                                </div>
+                                <div class="file-path-wrapper">
+                                  <input class="file-path validate" type="text" placeholder="Upload image">
+                                </div>
+                              </div>
+                        </div>
+                        <div id="characteristicsList" class="form-group">
+                            <ul></ul>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button id="projectSubmit" type="button" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            let characteristicsCount = 0;
+
+            $('#addCharacteristic').on('click', () => {
+               let characteristic = $('#projectCharacteristic').val();
+
+               if (characteristic) {
+                    $('#characteristicsList ul').append('<li>' + characteristic + '</li>');
+                    $('#projectForm').append('<input class="sr-only" name="characteristic-' + characteristicsCount + '" value="' + characteristic + '">');
+                    $('#projectCharacteristic').val('');
+                    characteristicsCount++;
+               }
+            });
+
+            $('#projectForm').on('submit', () => {
+                characteristicsCount = 0;
+            });
+
+            $('#projectSubmit').on('click', () => {
+                $('#projectForm').submit();
+            });
+        });
+    </script>
+{% endblock %}
